@@ -104,8 +104,6 @@ module CCPP_typedefs
     real (kind=kind_phys), pointer      :: dusfcg(:)          => null()  !<
     real (kind=kind_phys), pointer      :: dusfc1(:)          => null()  !<
     real (kind=kind_phys), pointer      :: dvdftra(:,:,:)     => null()  !<
-    real (kind=kind_phys), pointer      :: ten_t_pbl(:,:)     => null()  !<
-    real (kind=kind_phys), pointer      :: ten_q_pbl(:,:)     => null()  !<
     real (kind=kind_phys), pointer      :: dvdt(:,:)          => null()  !<
     real (kind=kind_phys), pointer      :: dvsfcg(:)          => null()  !<
     real (kind=kind_phys), pointer      :: dvsfc1(:)          => null()  !<
@@ -561,8 +559,6 @@ contains
     allocate (Interstitial%dusfcg          (ixs:ixe))
     allocate (Interstitial%dusfc1          (ixs:ixe))
     allocate (Interstitial%dvdt            (ixs:ixe,Model%levs))
-    allocate (Interstitial%ten_t_pbl       (ixs:ixe,Model%levs))
-    allocate (Interstitial%ten_q_pbl       (ixs:ixe,Model%levs))
     allocate (Interstitial%dvsfcg          (ixs:ixe))
     allocate (Interstitial%dvsfc1          (ixs:ixe))
     allocate (Interstitial%dvdftra         (ixs:ixe,Model%levs,Interstitial%nvdiff))
@@ -722,13 +718,12 @@ contains
     allocate (Interstitial%ztmax_land      (ixs:ixe))
     allocate (Interstitial%ztmax_water     (ixs:ixe))
 
-    allocate (Interstitial%tv_lay               (ixs:ixe, Model%levs))
-    allocate (Interstitial%relhum               (ixs:ixe, Model%levs))
-    allocate (Interstitial%qs_lay               (ixs:ixe, Model%levs))
-
     ! RRTMGP
     if (Model%do_RRTMGP) then
        allocate (Interstitial%tracer               (ixs:ixe, Model%levs,Model%ntrac))
+       allocate (Interstitial%tv_lay               (ixs:ixe, Model%levs))
+       allocate (Interstitial%relhum               (ixs:ixe, Model%levs))
+       allocate (Interstitial%qs_lay               (ixs:ixe, Model%levs))
        allocate (Interstitial%q_lay                (ixs:ixe, Model%levs))
        allocate (Interstitial%deltaZ               (ixs:ixe, Model%levs))
        allocate (Interstitial%deltaZc              (ixs:ixe, Model%levs))
@@ -920,8 +915,6 @@ contains
     deallocate (Interstitial%dvsfcg)
     deallocate (Interstitial%dvsfc1)
     deallocate (Interstitial%dvdftra)
-    deallocate (Interstitial%ten_t_pbl)
-    deallocate (Interstitial%ten_q_pbl)
     deallocate (Interstitial%dzlyr)
     deallocate (Interstitial%elvmax)
     deallocate (Interstitial%ep1d)
@@ -1078,14 +1071,12 @@ contains
     deallocate (Interstitial%ztmax_land)
     deallocate (Interstitial%ztmax_water)
 
-    deallocate (Interstitial%tv_lay)
-    deallocate (Interstitial%relhum)
-    deallocate (Interstitial%qs_lay)
-
-    
     ! RRTMGP
     if (Model%do_RRTMGP) then
        deallocate (Interstitial%tracer)
+       deallocate (Interstitial%tv_lay)
+       deallocate (Interstitial%relhum)
+       deallocate (Interstitial%qs_lay)
        deallocate (Interstitial%q_lay)
        deallocate (Interstitial%deltaZ)
        deallocate (Interstitial%deltaZc)
@@ -1156,7 +1147,7 @@ contains
       deallocate (Interstitial%dtdt_ngw)
       deallocate (Interstitial%kdis_ngw)
     end if
-    
+
     !-- GSL drag suite
     if (Model%gwd_opt==3 .or. Model%gwd_opt==33 .or. &
         Model%gwd_opt==2 .or. Model%gwd_opt==22 ) then
@@ -1229,15 +1220,12 @@ contains
 
     if (Model%imp_physics == Model%imp_physics_thompson .or. &
          Model%imp_physics == Model%imp_physics_tempo) then
-       Interstitial%nvdiff = 9
-
       if (Model%ltaerosol) then
-        Interstitial%nvdiff = Interstitial%nvdiff + 3
-      else if (Model%mraerosol .and. Model%imp_physics /= Model%imp_physics_tempo) then
-        Interstitial%nvdiff = Interstitial%nvdiff + 1
-      endif
-      if (Model%imp_physics == Model%imp_physics_tempo .and. Model%lthailaware) then
-        Interstitial%nvdiff = Interstitial%nvdiff + 2
+        Interstitial%nvdiff = 12
+     else if (Model%mraerosol) then
+        Interstitial%nvdiff = 10
+      else
+        Interstitial%nvdiff = 9
       endif
       if (Model%satmedmf) Interstitial%nvdiff = Interstitial%nvdiff + 1
     elseif ( Model%imp_physics == Model%imp_physics_nssl ) then
@@ -1321,14 +1309,12 @@ contains
         Interstitial%nvdiff = 7
      elseif (Model%imp_physics == Model%imp_physics_thompson .or. &
           Model%imp_physics == Model%imp_physics_tempo) then
-        Interstitial%nvdiff = 9
         if (Model%ltaerosol) then
-           Interstitial%nvdiff = Interstitial%nvdiff + 3
-        else if (Model%mraerosol .and. Model%imp_physics /= Model%imp_physics_tempo) then
-           Interstitial%nvdiff = Interstitial%nvdiff + 1
-        endif
-        if (Model%imp_physics == Model%imp_physics_tempo .and. Model%lthailaware) then
-           Interstitial%nvdiff = Interstitial%nvdiff + 2
+          Interstitial%nvdiff = 12
+        else if (Model%mraerosol) then
+          Interstitial%nvdiff = 10
+        else
+          Interstitial%nvdiff = 9
         endif
       else
         write(0,*) "Selected microphysics scheme is not supported when coupling with chemistry"
@@ -1377,7 +1363,7 @@ contains
                   n /= Model%nthl  .and. n /= Model%nthnc .and. n /= Model%ntgv    .and. &
                   n /= Model%nthv  .and. n /= Model%ntccn .and. n /= Model%ntccna  .and. &
                   n /= Model%ntrz  .and. n /= Model%ntgz  .and. n /= Model%nthz    .and. &
-                  n /= Model%ntsigma .and.  n /= Model%ntomega)
+                  n /= Model%ntsigma .and.  n /= Model%ntomega .and. n /= Model%ntbuexs)
         Interstitial%otsptflag(n) = ltest
         if ( ltest ) then
           tracers = tracers + 1
@@ -1476,8 +1462,6 @@ contains
     Interstitial%dvsfcg          = clear_val
     Interstitial%dvsfc1          = clear_val
     Interstitial%dvdftra         = clear_val
-    Interstitial%ten_t_pbl       = clear_val
-    Interstitial%ten_q_pbl       = clear_val
     Interstitial%dzlyr           = clear_val
     Interstitial%elvmax          = clear_val
     Interstitial%ep1d            = clear_val
@@ -1645,13 +1629,12 @@ contains
     Interstitial%ztmax_land      = clear_val
     Interstitial%ztmax_water     = clear_val
 
-    Interstitial%tv_lay                      = clear_val
-    Interstitial%relhum                      = clear_val
-    Interstitial%qs_lay                      = clear_val
-    
     ! RRTMGP
     if (Model%do_RRTMGP) then
        Interstitial%tracer                      = clear_val
+       Interstitial%tv_lay                      = clear_val
+       Interstitial%relhum                      = clear_val
+       Interstitial%qs_lay                      = clear_val
        Interstitial%q_lay                       = clear_val
        Interstitial%deltaZ                      = clear_val
        Interstitial%deltaZc                     = clear_val
