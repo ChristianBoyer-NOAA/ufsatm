@@ -1,6 +1,6 @@
 [submodule "fv3/atmos_cubed_sphere"]
   path = fv3/atmos_cubed_sphere
-  url = https://github.com/NOAA-GFDL/GFDL_atmos_cubed_sphere
+  url = https://github.com/ChristianBoyer-NOAA/GFDL_atmos_cubed_sphere
   branch = dev/emc
 [submodule "ccpp/framework"]
   path = ccpp/framework
@@ -8,7 +8,7 @@
   branch = feature/capgen-v1
 [submodule "ccpp/physics"]
   path = ccpp/physics
-  url = https://github.com/ufs-community/ccpp-physics
+  url = https://github.com/ChristianBoyer-NOAA/ccpp-physics
   branch = ufs/dev
 [submodule "upp"]
   path = upp
