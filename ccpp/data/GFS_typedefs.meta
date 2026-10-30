@@ -5918,6 +5918,12 @@
   units = flag
   dimensions = ()
   type = logical
+[hdiffq]
+  standard_name = do_horizontal_turbulent_eddy_diffusion_on_scalar_fields
+  long_name = flag for horizontal turbulent eddy diffusion on scalar fields
+  units = flag
+  dimensions = ()
+  type = logical
 [leonard]
   standard_name = flag_for_leonard_term
   long_name = flag for adding leonard term

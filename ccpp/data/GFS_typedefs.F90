@@ -1245,6 +1245,7 @@ module GFS_typedefs
     logical              :: do_ysu          !< flag for YSU turbulent mixing scheme
     logical              :: dspheat         !< flag for tke dissipative heating
     logical              :: sa3dtke         !< flag for scale-aware 3D tke scheme
+    logical              :: hdiffq          !< flag for horizontal turbulent eddy diffusion on scalar fields
     logical              :: leonard         !< flag for leonard term in subgrid turbulent fluxes
     logical              :: hurr_pbl        !< flag for hurricane-specific options in PBL scheme
     logical              :: lheatstrg       !< flag for canopy heat storage parameterization
@@ -3919,6 +3920,7 @@ module GFS_typedefs
     logical              :: do_ysu         = .false.                  !< flag for YSU vertical turbulent mixing scheme
     logical              :: dspheat        = .false.                  !< flag for tke dissipative heating
     logical              :: sa3dtke        = .false.                  !< flag for scale-aware 3D tke scheme
+    logical              :: hdiffq         = .false.                  !< flag for horizontal turbulent eddy diffusion on scalar fields
     logical              :: leonard        = .false.                  !< flag for leonard term in subgrid turbulent flux
     logical              :: hurr_pbl       = .false.                  !< flag for hurricane-specific options in PBL scheme
     logical              :: lheatstrg      = .false.                  !< flag for canopy heat storage parameterization
@@ -4370,7 +4372,7 @@ module GFS_typedefs
                                lndp_type,  n_var_lndp, lndp_each_step,                      &
                                pert_mp,pert_clds,pert_radtend,                              &
                           !--- Scale-aware 3D TKE scheme
-                               sa3dtke,                                                     &
+                               sa3dtke, hdiffq                                              &
                           !--- Leonard term
                                leonard,                                                     &
                           !--- Rayleigh friction
@@ -5467,6 +5469,7 @@ module GFS_typedefs
     Model%diag_log         = diag_log
 !--- SA-3D-TKE option
     Model%sa3dtke          = sa3dtke
+    Model%hdiffq           = hdiffq
 !--- Leonard term
     Model%leonard          = leonard
 
@@ -7329,6 +7332,7 @@ module GFS_typedefs
       print *, ' do_ysu            : ', Model%do_ysu
       print *, ' dspheat           : ', Model%dspheat
       print *, ' sa3dtke           : ', Model%sa3dtke
+      print *, ' hdiffq            : ', Model%hdiffq
       print *, ' leonard           : ', Model%leonard
       print *, ' lheatstrg         : ', Model%lheatstrg
       print *, ' lseaspray         : ', Model%lseaspray
